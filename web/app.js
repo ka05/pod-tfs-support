@@ -110,7 +110,6 @@ function verify (req, app, payload) {
     if(req.headers['tfs-web-hook']){
         repo = payload.resource.repository
         repoURL = repo.url
-        commit = payload.resource.refUpdates
         skipGitUrlCheck = true
     }else if (repo.links && /bitbucket\.org/.test(repo.links.html.href)) {
         repoURL = repo.links.html.href
@@ -129,7 +128,10 @@ function verify (req, app, payload) {
 
 
     // support bitbucket webhooks payload structure
-    if (/bitbucket\.org/.test(repoURL)) {
+    if(req.headers['tfs-web-hook']){
+        // From TFS
+        commit = payload.resource.refUpdates
+    }else if (/bitbucket\.org/.test(repoURL)) {
         commit = payload.push.changes[0].new
 
         commit.message = commit.target.message
