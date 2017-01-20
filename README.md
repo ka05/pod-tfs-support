@@ -1,4 +1,3 @@
-
 # POD - git push deploy for Node.js
 
 ![screenshot](http://i.imgur.com/pda21KY.png)
