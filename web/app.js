@@ -131,6 +131,7 @@ function verify (req, app, payload) {
     if(req.headers['tfs-web-hook']){
         // From TFS
         commit = payload.resource.refUpdates
+        commit.message = payload.resource.commits[payload.resource.commits.length - 1].comment
     }else if (/bitbucket\.org/.test(repoURL)) {
         commit = payload.push.changes[0].new
 
@@ -159,7 +160,7 @@ function checkBranch(commit, app, payload){
     // check branch match
     var ref = commit.name ? commit.name : payload.ref
 
-    if (!ref) return
+    if (!ref) return false
 
     var branch = ref.replace('refs/heads/', ''),
         expected = app.branch || 'master'
