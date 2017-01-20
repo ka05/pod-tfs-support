@@ -66,12 +66,22 @@ app.post('/hooks/:appid', express.bodyParser(), function (req, res) {
         }
     }
 
-    if (app && verify(req, app, payload)) {
-        executeHook(appid, app, payload, function () {
+    // handle web hook from TFS
+    if(req.headers['tfs-web-hook']){
+        if (app && verifyTFS(req, app, payload)) {
+            executeHook(appid, app, payload, function () {
+                res.end();
+            })
+        }
+    }else{
+        // Handle web hook from git or bibucket
+        if (app && verify(req, app, payload)) {
+            executeHook(appid, app, payload, function () {
+                res.end()
+            })
+        } else {
             res.end()
-        })
-    } else {
-        res.end()
+        }
     }
 })
 
@@ -93,31 +103,38 @@ pod.once('ready', function () {
 
 // Helpers
 function verify (req, app, payload) {
+    var skipGitUrlCheck = false // skips the check for gitUrl : only happens if coming from TFS
+    var commit
+    
     // not even a remote app
     if (!app.remote) return
     // check repo match
 
     var repo = payload.repository
     var repoURL
-
-    if (repo.links && /bitbucket\.org/.test(repo.links.html.href)) {
-        console.log('\nreceived webhook request from: ' + repo.links.html.href)
-
+    
+    // check comming from tfs
+    // NOTE: you need to add the following to your headers when creating the webhook in TFS
+    // TFS-Web-Hook:true
+    if(req.headers['tfs-web-hook']){
+        repoURL = repo.url
+        commit = payload.resource.refUpdates
+        skipGitUrlCheck = true
+    }else if (repo.links && /bitbucket\.org/.test(repo.links.html.href)) {
         repoURL = repo.links.html.href
     } else {
-        console.log('\nreceived webhook request from: ' + repo.url)
-
         repoURL = repo.url
     }
-
+    
+    console.log('\nreceived webhook request from: ' + repoURL)
+    
     if (!repoURL) return
 
-    if (ghURL(repoURL).repopath !== ghURL(app.remote).repopath) {
+    if (!skipGitUrlCheck && ghURL(repoURL).repopath !== ghURL(app.remote).repopath) {
         console.log('aborted.')
         return
     }
 
-    var commit
 
     // support bitbucket webhooks payload structure
     if (/bitbucket\.org/.test(repoURL)) {
@@ -138,6 +155,13 @@ function verify (req, app, payload) {
         console.log('aborted.')
         return
     }
+    
+    // check branch match
+    return checkBranch(commit, app, payload)
+}
+
+// handle checking the branch
+function checkBranch(commit, app, payload){
     // check branch match
     var ref = commit.name ? commit.name : payload.ref
 
@@ -145,10 +169,12 @@ function verify (req, app, payload) {
 
     var branch = ref.replace('refs/heads/', ''),
         expected = app.branch || 'master'
+    
     console.log('expected branch: ' + expected + ', got branch: ' + branch)
+    
     if (branch !== expected) {
         console.log('aborted.')
-        return
+        return false
     }
     return true
 }
