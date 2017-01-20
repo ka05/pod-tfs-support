@@ -108,7 +108,8 @@ function verify (req, app, payload) {
     // NOTE: you need to add the following to your headers when creating the webhook in TFS
     // TFS-Web-Hook:true
     if(req.headers['tfs-web-hook']){
-        repoURL = repo.resource.url
+        repo = payload.resource.repository
+        repoURL = repo.url
         commit = payload.resource.refUpdates
         skipGitUrlCheck = true
     }else if (repo.links && /bitbucket\.org/.test(repo.links.html.href)) {
