@@ -65,24 +65,15 @@ app.post('/hooks/:appid', express.bodyParser(), function (req, res) {
             return res.status(500).end()
         }
     }
-
-    // handle web hook from TFS
-    if(req.headers['tfs-web-hook']){
-        if (app && verifyTFS(req, app, payload)) {
-            executeHook(appid, app, payload, function () {
-                res.end();
-            })
-        }
-    }else{
-        // Handle web hook from git or bibucket
-        if (app && verify(req, app, payload)) {
-            executeHook(appid, app, payload, function () {
-                res.end()
-            })
-        } else {
+    
+    if (app && verify(req, app, payload)) {
+        executeHook(appid, app, payload, function () {
             res.end()
-        }
+        })
+    } else {
+        res.end()
     }
+    
 })
 
 // listen when API is ready
