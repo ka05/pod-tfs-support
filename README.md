@@ -1,11 +1,4 @@
 
-# IMPORTANT!! 
-## forked from yyx990803/pod 
-
-I needed to support webhooks coming from Microsoft Team Foundation Services ( TFS ) 
-so i changed a few things in /web/app.js to handle webhooks coming from TFS.
-
-
 # POD - git push deploy for Node.js
 
 ![screenshot](http://i.imgur.com/pda21KY.png)
