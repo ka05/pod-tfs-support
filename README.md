@@ -21,7 +21,7 @@ $ pod create myapp
 **On your local machine:**
 
 ``` bash
-$ git clone ssh://your-server/pod_dir/myapp.git
+$ git clone ssh://your-server/pod_dir/repos/myapp.git
 # hack hack hack, commit
 # make sure your main file is app.js
 # or specify "main" in package.json
@@ -279,7 +279,12 @@ Ready to go docker images:
 * [alpine linux](https://github.com/coderofsalvation/docker.alpine.nodejs.pod)
 * [ubuntu linux](https://github.com/raiscui/docker-pod)
 
-## Changelog
+## Changelog  
+
+### 0.9.1  
+
+- Move to latest pm2  
+- Added support for Node 7.x  
 
 ### 0.9.0
 
